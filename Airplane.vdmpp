@@ -2,14 +2,27 @@ class Airplane
 
 	types
 	-- TODO Define types here
+	
 	values
 	-- TODO Define values here
+	
 	instance variables
-	-- TODO Define instance variables here
+		private maxVelocity: real;						-- The plane's max velocity
+		private minVelocity: real;						-- The plane's min velocity
+		private avgVelocity: real;						-- The plane's average velocity
+		private velocity: real;								-- The plane's actual velocity
+		
+		private turnRate: nat;								-- Number of ticks the plane takes to turn after a command is received, 0 means its instant
+		
+		private goal : char; 									-- Destination. N,W,E,S or L | L is for landing
+		
+	
 	operations
 	-- TODO Define operations here
+	
 	functions
 	-- TODO Define functiones here
+	
 	traces
 	-- TODO Define Combinatorial Test Traces here
 
