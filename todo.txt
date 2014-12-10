@@ -1,0 +1,16 @@
+Airplane: ( Eu )
+	( adicionar valor de direcao e switch respectivo )
+	rotate
+	update
+	gotoBeacon
+	
+Map: ( Jorge )
+	update -> pode derivar metodos
+	constructor
+	addAirplane
+	
+Testes:
+	1 airplane no collision
+	2 airplanes no collision
+	2 airplanes linear collision
+	2 airplanes future collision
