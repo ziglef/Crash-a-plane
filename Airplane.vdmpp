@@ -4,21 +4,50 @@ class Airplane
 	-- TODO Define types here
 	
 	values
-	-- TODO Define values here
+		private maxVelocity: real = 1;				-- The plane's max velocity
+		private minVelocity: real = 0.1;			-- The plane's min velocity
+		private turnRate: nat = 0;						-- Number of ticks the plane takes to turn after a command is received, 0 means its instant
 	
 	instance variables
-		private maxVelocity: real;						-- The plane's max velocity
-		private minVelocity: real;						-- The plane's min velocity
-		private avgVelocity: real;						-- The plane's average velocity
-		private velocity: real;								-- The plane's actual velocity
+		private velocity: real := 0.25;				-- The plane's actual velocity
 		
-		private turnRate: nat;								-- Number of ticks the plane takes to turn after a command is received, 0 means its instant
+		private goal: char; 									-- (1) Destination. N,W,E,S or L | L is for landing
 		
-		private goal : char; 									-- Destination. N,W,E,S or L | L is for landing
+		private posx: real;										-- Actual x coordinate
+		private posy: real;										-- Actual y coordinate
 		
+		private destx: real;									-- Destination x coordinate
+		private desty: real;									-- Destination y coordinate
 	
 	operations
-	-- TODO Define operations here
+		-- contrutor. recebe um objectivo c e cria um aviao cujo objectivo e realizar c(1)
+		-- recebe tambem doies valores reais representanto o x e y actual do aviao
+		public Airplane: char * real * real ==> Airplane
+			Airplane(c, x, y) == (goal := c; posx := x; posy := y; return self)
+			pre c in set elems['N','W','E','S','L'];
+			
+		-- faz um aviao acelerar ate uma velocidade final de x
+		public speedUpTo: real ==> ()
+			speedUpTo(x) == velocity := x
+			pre x > velocity and
+					x <= maxVelocity
+			post 	velocity >= minVelocity and
+						velocity <= maxVelocity and
+						velocity = x and
+						velocity > velocity~;
+		
+		-- faz um aviao acelerar ate uma velocidade final de x
+		public slowDownTo: real ==> ()
+			slowDownTo(x) == velocity := x
+			pre x < velocity and
+					x >= minVelocity
+			post 	velocity >= minVelocity and
+						velocity <= maxVelocity and
+						velocity = x and
+						velocity < velocity~;
+	
+		-- Adicionar modx e mody que podem ter valores 0,1,-1
+		-- Usar posx = posx + velocity*modx e o mesmo para y
 	
 	functions
 	-- TODO Define functiones here
