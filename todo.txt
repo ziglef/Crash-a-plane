@@ -8,6 +8,7 @@ Map: ( Jorge )
 	update -> pode derivar metodos
 	constructor
 	addAirplane
+	land
 	
 Testes:
 	1 airplane no collision

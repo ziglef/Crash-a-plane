@@ -1,0 +1,144 @@
+class AirplaneTest
+
+operations
+	-- verifica se uma determinada condicao e valida
+	-- pre condicao: a condicao tem de ser verdadeira
+	private assertTrue: bool ==> ()
+		assertTrue(cond) == return
+		pre cond;
+		
+	-- Testa todos os casos de teste presentes excepto os que estao desenhado especificamente para falhar
+	private testAll: () ==> ()
+		testAll() == (
+			testConstructor();	-- Testes ao construtor
+			testSpeeds();				-- Testes de velocidade
+			testSets();					-- Testes aos sets do avião
+			testRotate();				-- Testes de rotação do avião
+			testUpdate();				-- Testes ao update do avião
+		);
+
+	-- testa a rotacao de um aviao
+	private testRotate: () ==> ()
+		testRotate() == (
+			dcl a : Airplane := new Airplane(<N>);		-- aviao base --
+		
+			-- Roda uma vez no sentido dos ponteiros do relogio
+			a.setAngle( 45 );
+			a.setRotationDirection( 1 );
+			
+			a.rotate();
+			
+			assertTrue( a.rotAng = 0 );
+			assertTrue( a.modx = 1 and a.mody = 1 );
+			
+			-- Roda duas vezes ( 90 graus ) contra os ponteiros do relogio
+			a.setAngle( 90 );
+			a.setRotationDirection( 2 );
+			
+			a.rotate();
+			
+			assertTrue( a.rotAng = 45 );
+			assertTrue( a.rotWay = 2 );
+			assertTrue( a.modx = 0 and a.mody = 1 );
+			
+			a.rotate();
+			
+			assertTrue( a.rotAng = 0 );
+			assertTrue( a.rotWay = 2 );
+			assertTrue( a.modx = -1 and a.mody = 1 );
+		);
+		
+	-- testa o metodo que actualiza a informacao do aviao a cada tick
+	private testUpdate: () ==> ()
+		testUpdate() == (
+			dcl a : Airplane := new Airplane(<N>);		-- aviao base --
+		
+			a.update();
+			
+			assertTrue( a.rotAng = 0 );
+			assertTrue( a.rotWay = 0 );
+			assertTrue( a.modx = 0 and a.mody = 1 );
+			
+			a.setAngle( 45 );
+			a.setRotationDirection( 1 );
+			
+			a.update();
+			
+			assertTrue( a.rotAng = 0 );
+			assertTrue( a.modx = 1 and a.mody = 1 );
+		);
+
+	-- testa as funcoes de set a variaveis
+	private testSets: () ==> ()
+		testSets() == (
+			dcl a : Airplane := new Airplane(<N>);		-- aviao base --
+		
+			-- Angle
+			a.setAngle( 45 );
+			assertTrue( a.rotAng = 45 );
+			a.setAngle( 90 );
+			assertTrue( a.rotAng = 90 );
+			a.setAngle( 0 );
+			assertTrue( a.rotAng = 0 );
+			
+			-- Rotation Direction
+			a.setRotationDirection( 1 );
+			assertTrue( a.rotWay = 1 );
+			a.setRotationDirection( 2 );
+			assertTrue( a.rotWay = 2 );
+			a.setRotationDirection( 0 );
+			assertTrue( a.rotWay = 0 );
+		);
+
+	-- testa o constructor da classe aviao
+	private testConstructor: () ==> ()
+		testConstructor() == (
+			dcl a1 : Airplane := new Airplane(<E>);
+			dcl a2 : Airplane := new Airplane(<S>);
+			dcl a3 : Airplane := new Airplane(<W>);
+			dcl a4 : Airplane := new Airplane(<N>);
+			
+			assertTrue( a1.modx = 1 and a1.mody = 0 );
+			assertTrue( a2.modx = 0 and a2.mody = -1 );
+			assertTrue( a3.modx = -1 and a3.mody = 0 );
+			assertTrue( a4.modx = 0 and a4.mody = 1 );
+		);
+
+	-- testa as funcoes de manuseamento de velocidades
+	private testSpeeds: () ==> ()
+		testSpeeds() == (
+			dcl a : Airplane := new Airplane(<N>);		-- aviao base --
+		
+			a.slowDownTo( 0.5 );
+			assertTrue( a.velocity = 0.5 );
+			a.speedUpTo( 0.9 );
+			assertTrue( a.velocity = 0.9 );
+			a.speedUpTo( 1.0 );
+			assertTrue( a.velocity = 1.0 );
+		);
+
+	-- corre todos os casos de teste
+	public static main: () ==> ()
+		main() == (
+			new AirplaneTest().testAll();
+		);
+		
+	-- caso de teste desenhado para falhar na chamada da funcao speedUpTo do aviao
+	-- falha ao introduzir uma velocidade superior a velocidade maxima dos avioes
+	-- violando assim uma pre condicao
+	public static testFailSpeedUp: () ==> ()
+		testFailSpeedUp() == (
+			dcl a : Airplane := new Airplane(<N>);		-- aviao base --
+			a.speedUpTo( 3 );
+		);
+	
+	-- caso de teste desenhado para falhar na chamada da funcao slowDownTo do aviao
+	-- falha ao introduzir uma velocidade inferior a velocidade minima dos avioes
+	-- violando assim uma pre condicao
+	public static testFailSlowDown: () ==> ()
+	testFailSlowDown() == (
+		dcl a : Airplane := new Airplane(<N>);		-- aviao base --
+		a.slowDownTo( 0 );
+	);
+
+end AirplaneTest

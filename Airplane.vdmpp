@@ -1,7 +1,4 @@
 class Airplane
-
-	types
-	-- TODO Define types here
 	
 	values
 		private maxVelocity: real = 1;				-- The plane's max velocity
@@ -9,26 +6,46 @@ class Airplane
 		private turnRate: nat = 0;						-- Number of ticks the plane takes to turn after a command is received, 0 means its instant
 	
 	instance variables
-		private velocity: real := 0.25;				-- The plane's actual velocity
+		public velocity: real := 1.0;				-- The plane's actual velocity
 		
-		private goal: char; 									-- (1) Destination. N,W,E,S or L | L is for landing
+		public goal: ATC`Goal; 									-- (1) Destination. N,W,E,S or L | L is for landing
 		
-		private posx: real;										-- Actual x coordinate
-		private posy: real;										-- Actual y coordinate
+		public modx: int := 0;							-- Modifier for x coordinate
+		public mody: int := 0;							-- Modifier for y coordinate
 		
-		private destx: real;									-- Destination x coordinate
-		private desty: real;									-- Destination y coordinate
+		public rotAng: real := 0;						-- Current rotation angle ( if 0 no rotation )
+		public rotWay: nat := 0;							-- Rotation way. ( 1 = clockwise | 2 = counter-clockwise | 0 = no rotation )
 	
 	operations
 		-- contrutor. recebe um objectivo c e cria um aviao cujo objectivo e realizar c(1)
-		-- recebe tambem doies valores reais representanto o x e y actual do aviao
-		public Airplane: char * real * real ==> Airplane
-			Airplane(c, x, y) == (goal := c; posx := x; posy := y; return self)
-			pre c in set elems['N','W','E','S','L'];
+		public Airplane: ATC`Goal ==> Airplane
+			Airplane(c) == (
+				goal := c;
+				if( c = <N> ) then (
+					modx := 0;
+					mody := 1;
+				) else if( c = <S> ) then (
+					modx := 0;
+					mody := -1;
+				) else if( c = <E> ) then (
+					modx := 1;
+					mody := 0;
+				) else if( c = <W> ) then (
+					modx := -1;
+					mody := 0;
+				);
+				return self
+			)
+			pre c in set elems[<N>, <W>, <E>, <S>, <L>]
+			post modx >= -1 and
+					 modx <= 1 and
+					 mody >= -1 and
+					 mody <= 1;
 			
 		-- faz um aviao acelerar ate uma velocidade final de x
 		public speedUpTo: real ==> ()
-			speedUpTo(x) == velocity := x
+			speedUpTo(x) == 
+				velocity := x
 			pre x > velocity and
 					x <= maxVelocity
 			post 	velocity >= minVelocity and
@@ -38,7 +55,8 @@ class Airplane
 		
 		-- faz um aviao acelerar ate uma velocidade final de x
 		public slowDownTo: real ==> ()
-			slowDownTo(x) == velocity := x
+			slowDownTo(x) == 
+				velocity := x
 			pre x < velocity and
 					x >= minVelocity
 			post 	velocity >= minVelocity and
@@ -46,13 +64,77 @@ class Airplane
 						velocity = x and
 						velocity < velocity~;
 	
-		-- Adicionar modx e mody que podem ter valores 0,1,-1
-		-- Usar posx = posx + velocity*modx e o mesmo para y
-	
-	functions
-	-- TODO Define functiones here
-	
-	traces
-	-- TODO Define Combinatorial Test Traces here
+		-- actualiza a posicao actual do aviao tendo em conta o sentido do movimento
+		public update: () ==> ()
+			update() == (	
+				if( rotAng > 0 and rotWay > 0) then (
+					rotate()
+				)
+			);
+		
+		-- Sets the airplane rotation angle
+		public setAngle: nat ==> ()
+			setAngle(ang) == (
+				rotAng := ang
+			)
+		pre ang >= 0 and ang rem 45 = 0
+		post rotAng >= 0 and rotAng rem 45 = 0;
+		
+		-- Sets the airplane rotation direction
+		public setRotationDirection: nat ==> ()
+			setRotationDirection(way) == (
+				rotWay := way
+			)
+		pre way >= 0 and way < 3
+		post rotWay >= 0 and rotWay < 3;
+		
+		-- faz o aviao rodar
+		-- arg1: angulo
+		-- arg2: sentido ( 1 = clockwise | 2 = counter-clockwise )	
+		public rotate: () ==> ()
+			rotate() == (
+				rotAng := rotAng - 45;
+				if( rotWay = 1 ) then (	-- clockwise
+					if( modx = -1 and mody = 0 ) then
+						mody := 1
+					else if( modx = -1 and mody = 1 ) then
+						modx := 0
+					else if( modx = 0 and mody = 1 ) then
+						modx := 1
+					else if( modx = 1 and mody = 1 ) then
+						mody := 0
+					else if( modx = 1 and mody = 0 ) then
+						mody := -1
+					else if( modx = 1 and mody = -1 ) then
+						modx := 0
+					else if( modx = 0 and mody = -1 ) then
+						modx := -1
+					else if( modx = -1 and mody = -1 ) then
+						mody := 0
+				) else if( rotWay = 2 ) then (	-- counter-clockwise
+					if( modx = -1 and mody = 0 ) then
+						mody := -1
+					else if( modx = -1 and mody = 1 ) then
+						mody := 0
+					else if( modx = 0 and mody = 1 ) then
+						modx := -1
+					else if( modx = 1 and mody = 1 ) then
+						modx := 0
+					else if( modx = 1 and mody = 0 ) then
+						mody := 1
+					else if( modx = 1 and mody = -1 ) then
+						mody := 0
+					else if( modx = 0 and mody = -1 ) then
+						modx := 1
+					else if( modx = -1 and mody = -1 ) then
+						modx := 0
+				)
+			)
+	pre rotAng > 0 and rotAng rem 45 = 0 and
+			rotWay > 0 and
+			rotWay < 3
+	post rotWay > 0 and
+			 rotWay < 3 and
+			 rotAng >= 0 and rotAng rem 45 = 0;
 
 end Airplane

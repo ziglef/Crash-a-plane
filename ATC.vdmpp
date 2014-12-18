@@ -1,0 +1,126 @@
+class ATC
+
+types
+	-- representa um ponto na "grelha"
+	public Point ::
+				X: real
+				Y: real;
+	
+	-- representa a orientacao actual de por exemplo um aviao
+	public Orientation = <N> | <S> | <W> | <E>;
+	-- representa o objectivo de um aviao | <L> -> Land
+	public Goal = <N> | <S> | <W> | <E> | <L>;
+	
+	public PointsMap = map Point to Airplane; 		-- a uma posicao apenas pode estar associado uma aviao
+
+instance variables
+	public points: PointsMap := {|->};																-- grelha de pontos
+	public maxPoint : Point := mk_Point(10,10);												-- ponto maximo da grelha ( dimensoes maximas )
+		inv forall p in set dom points & IsValidATCPoint(p, maxPoint);	-- invariante que garante que cada ponto presente na grelha e um ponto
+																																		-- que pertence ao conjunto de todos os pontos entre (0,0) e (maxPoint.X, maxPoint.Y)
+		
+	public airportPos : Point := mk_Point(0,0);												-- posicao do aeroporto no ATC
+	public landingStripPos : Point := mk_Point(0,0);									-- posicao da pista de aterragem do aeroporto
+	
+operations
+
+	-- contrutor, cria um ATC
+	public ATC : Point * Point * Point ==> ATC
+ 		ATC(p, airportPoint,landingStripPoint) ==
+ 		(
+ 			-- set das variaveis do ATC	
+ 	 		airportPos := airportPoint;
+ 			landingStripPos := landingStripPoint;
+  		maxPoint := p;
+  		
+  		return self;
+		 )
+ 	pre IsValidATCPoint(airportPoint, maxPoint) and 			-- verifica se posicao do aeroporto e valida
+ 			IsValidATCPoint(landingStripPoint, maxPoint)			-- verifica se posicao da pista e valida
+ 	post maxPoint = p;			
+ 				 	
+ 	-- adiciona um aviao a grelha do ATC isto representa o evento de um aviao entrar no espaco
+ 	-- aereo controlado por este mesmo ATC
+ 	public addAirplane : Point * Orientation * Goal ==> ()
+ 		addAirplane(p, o, g) == (
+ 			points := { p |-> new Airplane(g)};
+ 		)
+ 	pre IsValidATCPoint(p, maxPoint) and									-- aviao adicionado numa posicao valida do ATC
+ 			isExtremePoint(p, maxPoint) and										-- posicao e um extremo do ATC
+ 			isPointAvailable(points, p) and										-- nao existe nenhum aviao/aeroporto/pista na posicao
+ 			isOrientationCorrect(p, maxPoint, o)							-- aviao entra no mapa na orientaao correcta
+ 	post points(p).goal = g;  		
+ 		
+ 		
+ 	-- metodo principal do ATC
+ 	-- verifica se vai haver colisoes e desvia um dos avioes
+ 	-- garante que cada aviao continua a ir em direcao ao seu objectivo
+ 	public update : () ==> ()
+ 		update() == (
+ 			for all point in set dom points do
+ 			(
+ 				-- evaluateGoal e rodar se necessário
+
+ 					dcl airplane : Airplane := points(point);
+ 				if (nextPosition(airplane, point) in set dom points) then								-- prever proxima posicao e verificar se esta desocupada
+ 					(airplane.setAngle(45);																								-- se estiver, roda 45 graus para desviar
+ 					airplane.setRotationDirection(1)
+ 					);
+ 				-- update
+ 				airplane.update();																											-- update ao aviao
+ 				points := {point} <-: points;
+ 				points := points ++ { nextPosition(airplane, point) |-> airplane };			-- altera a posicao do aviao
+ 			)
+ 		)
+ 		pre points <> {|->};			-- mapeamento nao deve estar vazio
+ 		-- numero de avioes deve permanecer igual
+ 										
+ 	-- retorna posicao do aviao no fim do proximo tick
+ 	public nextPosition : Airplane * Point ==> Point
+ 		nextPosition(a, p) == (
+ 			dcl point : Point := mk_Point(p.X + a.modx, p.Y + a.mody);
+ 			return point;
+ 		)
+ 		pre IsValidATCPoint(p, maxPoint);
+
+ functions
+ 
+ 		-- verifica se um dado ponto esta livre (ainda nao existe no mapa)
+    public isPointAvailable : PointsMap * Point -> bool
+	 		isPointAvailable(points, p) == (
+	   		if p in set dom points then
+	     		false
+	     	else
+	     		true
+    );
+ 
+	 -- confirma se um dado ponto pertence ao alcance do ATC
+	 public IsValidATCPoint : Point * Point -> bool
+ 		IsValidATCPoint(p, maxPoint) ==
+   		maxPoint.X >= p.X and p.X >= 0 and maxPoint.Y >= p.Y and p.Y >=0;
+    
+   -- confirma se um ponto e um ponto de limite de alcance do ATC
+   -- estes pontos representam onde os avioes podem "entrar" 
+   public isExtremePoint : Point * Point -> bool
+    	isExtremePoint(p, maxpoint) == (
+    		p.X = 0 or p.X = maxpoint.X or p.Y = 0 or p.Y = maxpoint.Y
+    	);
+    	
+   -- dado um aviao que entrou no radar do ATC verifica se entrou com a orientacao correcta
+   public isOrientationCorrect : Point * Point * Orientation -> bool
+    	isOrientationCorrect(p, maxp, o) == (
+    		-- x = 0
+    		( p.X = 0 and p.Y = 0 and ( o = <N> or o = <E> ) ) or
+    		( p.X = 0 and p.Y = maxp.Y and ( o = <S> or o = <E> ) ) or
+    		( p.X = 0 and p.Y > 0 and p.Y < maxp.Y and o = <E> ) or
+    		-- x = max
+    		( p.X = maxp.X and p.Y = 0 and ( o = <N> or o = <W> ) ) or
+    		( p.X = maxp.X and p.Y = maxp.Y and ( o = <S> or o = <W> ) ) or
+    		( p.X = maxp.X and p.Y > 0 and p.Y < maxp.Y and o = <W> ) or
+    		-- y = 0
+    		( p.Y = 0 and p.X > 0 and p.X < maxp.X and o = <N> ) or
+    		-- y = max
+    		( p.Y = maxp.Y and p.X > 0 and p.X < maxp.X and o = <S> )
+    	);
+
+end ATC

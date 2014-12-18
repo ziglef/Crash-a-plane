@@ -1,0 +1,98 @@
+class ATCTest
+
+operations
+	-- verifica se uma determinada condicao e valida
+	-- pre condicao: a condicao tem de ser verdadeira
+	private assertTrue: bool ==> ()
+		assertTrue(cond) == return
+		pre cond;
+		
+	-- Testa todos os casos de teste presentes excepto os que estao desenhado especificamente para falhar
+	private testAll: () ==> ()
+		testAll() == (
+			testConstructor();
+			testAddAirplane();
+			testUpdate();
+		);
+
+	-- testa o metodo que actualiza o estado do ATC
+	private testUpdate: () ==> ()
+		testUpdate() == (
+			-- declaring a new ATC
+			dcl maxP : ATC`Point := mk_ATC`Point( 10, 10 );
+			dcl airportP : ATC`Point := mk_ATC`Point( 5, 5 );
+			dcl landingStripP : ATC`Point := mk_ATC`Point( 6, 5 );
+			dcl g : ATC := new ATC( maxP, airportP, landingStripP );
+			
+			-- declaring an airplane
+			dcl p : ATC`Point := mk_ATC`Point( 5, 0 );
+			dcl o : ATC`Orientation := <N>;
+			dcl goal : ATC`Goal := <N>;
+			
+			-- adding the airplane to the ATC
+			g.addAirplane(p, o , goal);
+			
+			-- updating the ATC so that the airplane moves
+			g.update();
+			
+			assertTrue( mk_ATC`Point(5, 1) in set dom g.points );
+		);
+
+	-- testa a funcionalidade de adicionar um aviao ao espaco aereo do ATC
+	private testAddAirplane: () ==> ()
+		testAddAirplane() == (
+			-- declaring a new ATC
+			dcl maxP : ATC`Point := mk_ATC`Point( 10, 10 );
+			dcl airportP : ATC`Point := mk_ATC`Point( 5, 5 );
+			dcl landingStripP : ATC`Point := mk_ATC`Point( 6, 5 );
+			dcl g : ATC := new ATC( maxP, airportP, landingStripP );
+			
+			-- declaring an airplane
+			dcl p : ATC`Point := mk_ATC`Point( 5, 0 );
+			dcl o : ATC`Orientation := <N>;
+			dcl goal : ATC`Goal := <N>;
+			
+			-- adding the airplane to the ATC
+			g.addAirplane(p, o , goal);
+		);
+
+	-- testa o construtor do ATC
+	private testConstructor: () ==> ()
+		testConstructor() == (
+			-- declaring a new ATC
+			dcl maxP : ATC`Point := mk_ATC`Point( 10, 10 );
+			dcl airportP : ATC`Point := mk_ATC`Point( 5, 5 );
+			dcl landingStripP : ATC`Point := mk_ATC`Point( 6, 5 );
+			dcl g : ATC := new ATC( maxP, airportP, landingStripP );
+			
+			assertTrue( g.maxPoint = maxP );
+			assertTrue( g.airportPos = airportP );
+			assertTrue( g.landingStripPos = landingStripP );
+		);
+
+	-- executa todos os testes
+	public static main: () ==> ()
+		main() == (
+			new ATCTest().testAll();
+		);
+
+	-- adiciona um aviao propositadamente no meio do ATC de modo a mostrar a efeciencia
+	-- das pre condicoes da funcao addAirplane
+	public static testFailAddAirplane: () ==> ()
+		testFailAddAirplane() == (
+			-- declaring a new ATC
+			dcl maxP : ATC`Point := mk_ATC`Point( 10, 10 );
+			dcl airportP : ATC`Point := mk_ATC`Point( 5, 5 );
+			dcl landingStripP : ATC`Point := mk_ATC`Point( 6, 5 );
+			dcl g : ATC := new ATC( maxP, airportP, landingStripP );
+			
+			-- declaring an airplane
+			dcl p : ATC`Point := mk_ATC`Point( 5, 5 );
+			dcl o : ATC`Orientation := <N>;
+			dcl goal : ATC`Goal := <N>;
+			
+			-- adding the airplane to the ATC
+			g.addAirplane(p, o , goal);
+		);
+ 	
+end ATCTest
